@@ -1,0 +1,39 @@
+html(lang="zh-cmn-Hans")
+	head
+		title [#{keyword}]相关的#{totalcnt}个图标
+		meta(charset="UTF-8")
+		meta(name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,viewport-fit=cover")    
+		link(rel="stylesheet" href="/css/weui.css")
+		script(src='http://res.wx.qq.com/open/js/jweixin-1.2.0.js')
+		script.
+			function imagepreview(url){
+				var urls = "#{urls}"
+				urls = urls.split(',')				
+			  console.log('url:'+url)
+			  console.log('urls'+urls)				
+				wx.previewImage({current:url,urls:urls})			
+			}			
+			function imagepreview_qr(){
+				url = 'http://www.webtest365.com/tubiaosou_qr.jpg'
+				urls=[]				
+				urls.push(url)
+				wx.previewImage({current:url,urls:urls})			
+			}				
+			
+	body        		
+		div
+			div(class="weui-form-preview__ft")
+				a(class="weui-form-preview__btn weui-form-preview__btn_primary" href="javascript:window.location.reload();") 换一批
+			div(class="weui-grids")
+				-each item in imglist
+					a(href="javascript:;" class="weui-grid"  )
+						div(class="weui-grid__icon" )
+							img(src="s."+item.urlpath  alt="" onclick="imagepreview('"+item.urlroot+item.urlpath+"')")
+							p(class="weui-grid__label")
+				a(href="javascript:;"  class="weui-grid" )
+					div(class="weui-grid__icon" )
+						img(src="/s_tubiaosou_qr.jpg" alt="" onclick="imagepreview_qr()")
+						p(class="weui-grid__label") 关注
+			div(class="weui-form-preview__ft")
+			p(class="page__desc") 以上内容由【图标搜】公众号提供。添加微信号tubiaosou或识别上方二维码关注后，可查询海量图标。
+			

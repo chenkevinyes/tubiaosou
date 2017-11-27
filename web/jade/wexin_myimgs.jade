@@ -1,0 +1,361 @@
+html(lang="zh-cmn-Hans")
+	head
+		title 我的图库#{totalcnt}
+		meta(charset="UTF-8")
+		meta(name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,viewport-fit=cover")    
+		link(rel="stylesheet" href="/css/weui.css")
+		//link(rel="stylesheet" href="/css/example.css")
+		script(type="text/javascript" src="http://code.jquery.com/jquery-2.0.0.min.js")
+		script(src='http://res.wx.qq.com/open/js/jweixin-1.2.0.js')
+		style(type="text/css").
+			.myimgs_checkbox{
+				
+				}	
+			.img_cell_container{
+			
+			}
+			.img_small{
+			
+			}			
+			.mark{
+				border-radius:10px;margin:3px 3px 3px 3px;padding:1px 5px 1px 5px;white-space:nowrap;float:right;font-size:14px
+				}
+			.mark.mark_use{
+				border:thin solid #00ff00;color:#00ff00
+				}				
+			.mark.mark_unuse{
+				border:thin solid #aaaaaa;color:#aaaaaa
+				}						
+			.mark.mark_new{
+				border:thin dashed #cccccc;color:#cccccc
+				}												
+			.mark.mark_selected{
+				border:thin solid #00ff00;color:#ffffff;background-color:#00ff00
+				}																
+		script.
+			$(document).ready(function(){
+				eventlink();
+			});
+			function eventlink(){
+				$('.img_small').unbind('click').bind('click',function(event){
+					imgid = $(this).prop('id');
+					console.log('cell click:'+imgid);
+					if (imgid==null) return;
+					if (imgid.length<=4) return;
+					imgid = imgid.substr(6);					
+					console.log('imgid:'+imgid);
+					var url = $(this).attr('src');
+					url = url.replace('s.','')
+					url = window.location.protocol+"//"+window.location.host+url;		
+					console.log('url:why '+url)	;
+					imagepreview(url);
+					event.stopPropagation();					
+				});
+				
+				$('.mark').unbind('click').bind('click',function(event){
+					var cssname = $(this).attr('class');
+					if (cssname=="mark mark_unuse"){
+						$(this).attr('class','mark mark_use');
+					}else if (cssname=="mark mark_use"){
+						$(this).attr('class','mark mark_unuse');
+					}
+					event.stopPropagation();					
+				});				
+				$(".mark_new").unbind('focus').bind('focus', function(event){
+					console.log('focus');
+					$(this).val(' ');
+				});
+				$(".mark_new").unbind('blur').bind('blur', function(event){					
+					var marktext = $(this).val();
+					marktext = $.trim(marktext);										
+					console.log('blur:'+marktext);
+					if (marktext==''){
+						$(this).val('新增标签')						
+						console.log('blur new value:'+$(this).val());
+						$(this).width(textWidth($(this).val()));
+					}
+				});				
+				$(".mark_new").unbind('keydown').bind('keydown', function(event){
+				  $(this).width(textWidth($(this).val()));
+					event.stopPropagation();				  
+				});				
+				$(".mark_new").width(textWidth('新增标签'));
+				
+				//标签父div被点击时生成新标签
+				$("#marks_container").unbind('click').bind('click', function(event){
+						console.log('container click')
+						var $mark_input = $("#input_mark_new")
+						var marktext = $mark_input.val();
+						marktext = $.trim(marktext);
+						if ((marktext!='')&(marktext!='新增标签')){
+							console.log('enter:'+$mark_input.val());
+							var newMarkDiv = '<div class="mark mark_use">'+$mark_input.val()+'</div> ';
+							$mark_input.before(newMarkDiv);
+						}
+						$mark_input.val('新增标签');
+						$mark_input.width(textWidth($mark_input.val()));														
+						eventlink();											
+				});
+				$("#mark_edit_dialog_cancel").unbind('click').bind('click', function(){				
+					$("#mark_edit_dialog").css('display','none')				
+				});							
+				//图片单元格被点击		
+				$(".img_cell_container").unbind('click').bind('click', function(){				
+					imgid = $(this).prop('id');
+					console.log('cell click:'+imgid);
+					if (imgid==null) return;
+					if (imgid.length<=4) return;
+					imgid = imgid.substr(4);					
+					
+					getimgmarks("#{userid}",imgid,function(){
+						//绑定OK事件					
+						$("#mark_edit_dialog_ok").unbind('click').bind('click', function(){				
+							updateimgmarks_single(imgid);					
+						});												
+						//显示对话框		
+						$("#mark_edit_dialog").css('display','block');														
+					})							
+					
+					
+				});
+										
+				$("#mark_btn_ft").unbind('click').bind('click', function(){	
+					getusermarks("#{userid}",function(){
+						//绑定OK事件					
+						$("#mark_edit_dialog_ok").unbind('click').bind('click', function(){				
+							updateimgmarks_batch();					
+						});												
+						//显示对话框		
+						$("#mark_edit_dialog").css('display','block');														
+					})							
+				});																
+			}
+			function imagepreview(url){
+				var urls = "#{urls}"
+				urls = urls.split(',')				
+			  console.log('url:'+url)
+			  console.log('urls'+urls)				
+				wx.previewImage({current:url,urls:urls})			
+			}			
+			function imagepreview_qr(){
+				url = 'http://www.webtest365.com/tubiaosou_qr.jpg'
+				urls=[]				
+				urls.push(url)
+				wx.previewImage({current:url,urls:urls})			
+			}
+			function nextpage(){
+				var url = window.location.href;				
+				var pageidx = parseInt("#{pageidx}")
+				var nextpageidx = pageidx + 1
+				
+				var page = 21				
+				var totalcnt = parseInt("#{totalcnt}")
+				if ((nextpageidx * page) >= totalcnt) {
+					nextpageidx = 0;
+				}				
+				url = url.replace('pageidx='+pageidx,'pageidx='+nextpageidx)
+				console.log(url)
+				window.location.replace(url)
+			}
+			function select_all(){
+				var selected = $('#sel_all').get(0).checked;
+				console.log(selected);
+				$("input.myimgs_checkbox").prop("checked",selected);
+			}
+			function textWidth(text){
+				var sensor = $('<pre>'+ text +'</pre>').css({display: 'none'}); 
+				$('body').append(sensor); 
+				var width = sensor.width();
+				sensor.remove(); 
+				return width;
+			}
+			//获取用户所有标签
+			function getusermarks(userid,callback){
+				$.get('./getuser_words',{userid:userid},function(wordlist){
+					$parentdiv = $("#marks_container");
+					$("div.mark").remove();
+					for (var i=0;i<wordlist.length;i++){
+						var newMarkDiv = '<div class="mark mark_unuse">'+wordlist[i]+'</div> ';
+						$parentdiv.prepend(newMarkDiv);								
+					}						
+					callback();				
+					eventlink();
+				})
+			}
+			//获取当前图片标签
+			function getimgmarks(userid,imgid,callback){
+				$.get('./myimg_words',{userid:userid,imgid:imgid},function(ret){
+					if (ret==null) return;				
+					console.log(ret);
+					wordlist = ret.wordlist;
+					usedwordlist = ret.usedwordlist;
+					$parentdiv = $("#marks_container");
+					$("div.mark").remove();
+					for (var i=0;i<wordlist.length;i++){
+						cssname ="mark"
+						var idx = $.inArray(wordlist[i],usedwordlist) ;
+						console.log(usedwordlist, wordlist[i],idx)		
+						if (idx>=0){
+							cssname += " mark_use";						
+						}else{
+							cssname += " mark_unuse";						
+						}				
+						
+						var newMarkDiv = '<div class="'+cssname+'">'+wordlist[i]+'</div> ';
+						$parentdiv.prepend(newMarkDiv);								
+					}										
+					callback();
+					eventlink();
+				})
+			}
+			//提交服务器更新标签
+			function updateimgmarks(imgids,marks,ispublic,callback){
+				$.post('./updatemyimgs_words',{idlist:imgids,wordlist:marks,ispublic:ispublic},callback)
+			}
+			
+			function showtoast(text){				
+				var $toast = $("#toast");				
+				if ($toast.css('display') != 'none') return;				
+				$("#toast_text").text = text;
+				console.log($("#toast_text"));
+				$toast.fadeIn(100);
+				setTimeout(function () {
+					$toast.fadeOut(100);
+				}, 2000);			
+			}
+			//批量更新标签对话框确定后更新
+			function updateimgmarks_batch(){
+				$("#mark_edit_dialog").css('display','none');
+				var selected_marks = new Array();
+				$("div.mark_use").each(function(){
+					selected_marks.push($.trim($(this).text()));						
+				});
+				if (selected_marks.length >0){
+					console.log(selected_marks);
+				}
+				var selected_imgs= new Array();
+				$("input.myimgs_checkbox").each(function(){
+					if ($(this).prop("checked")){
+						id = $(this).prop("id");
+						if (id){
+							if (id.length>4){
+								id = id.substr(4);
+								selected_imgs.push(id);
+							}
+						}
+					}
+				});
+				var ispublic = 0;
+				if ($("#mark_edit_dialog_ispublic").prop("checked")){
+					console.log('ispublic:true');
+					ispublic = 1;
+				}
+				if (selected_imgs.length>0){
+					console.log('ajax:'+selected_imgs,selected_marks)
+					updateimgmarks(selected_imgs,selected_marks,ispublic,function(err){						
+						console.log('update marks:'+err);
+						if (err == ""){
+							for (var i=0;i<selected_imgs.length;i++){
+							  var item = selected_imgs[i]
+								console.log(item);
+								if (selected_marks.length==0){
+									$("#tag_"+item).text('');
+								}else{
+									$("#tag_"+item).text('L');
+								}								
+							}
+						}						
+					})
+				}			
+			}
+			//
+			function updateimgmarks_single(imgid){
+				$("#mark_edit_dialog").css('display','none');
+				var selected_marks = new Array();
+				$("div.mark_use").each(function(){
+					selected_marks.push($.trim($(this).text()));						
+				});
+				if (selected_marks.length >0){
+					console.log(selected_marks);
+				}
+				
+				var selected_imgs= new Array();
+				selected_imgs.push(imgid);
+				
+				var ispublic = 0;
+				if ($("#mark_edit_dialog_ispublic").prop("checked")){
+					console.log('ispublic:true');
+					ispublic = 1;
+				}
+				if (selected_imgs.length>0){
+					console.log('ajax:'+selected_imgs,selected_marks)					
+					updateimgmarks(selected_imgs,selected_marks,ispublic,function(err){						
+						console.log('update marks:'+err);
+						if (err == ""){
+							for (var i=0;i<selected_imgs.length;i++){
+							  var item = selected_imgs[i]
+								console.log(item);
+								if (selected_marks.length==0){
+									$("#tag_"+item).text('');
+								}else{
+									$("#tag_"+item).text('L');
+								}								
+							}
+						}						
+					})
+					
+				}			
+			}
+	body        		
+		div
+			div(class="weui-form-preview__ft")
+				a(class="weui-form-preview__btn weui-form-preview__btn_primary" href="javascript:nextpage()") 下一批
+				input(id="sel_all" type="checkbox" class="weui-agree__checkbox" onclick="select_all();")
+			div(class="weui-grids")
+				-each item in imglist					
+					a(id = "cel_"+item.id href="javascript:;" class="weui-grid img_cell_container" style="width:20%;padding:20px 20px;" )
+						div(class="weui-grid__icon" )
+							img(id="img_s_"+item.id src="s."+item.urlpath class="img_small" alt="")
+							p(id = "tag_"+item.id class="weui-grid__label")				
+								-if (item.word == null || item.word==""){									
+								-} else{
+									i L
+								-}
+						input(id='sel_'+item._id type="checkbox" class="weui-agree__checkbox myimgs_checkbox" style="float:right;position:absolute;")
+			div(class="weui-tabbar")
+				a(id="mark_btn_ft" href="javascript:;" class="weui-tabbar__item weui-bar__item_on")
+					span(style="display: inline-block;position: relative;")
+						img(src="http://weui.io/images/icon_tabbar.png" alt="" class="weui-tabbar__icon")
+					p(class="weui-tabbar__label") 标签
+				a(href="javascript:;" class="weui-tabbar__item weui-bar__item_on")
+					span(style="display: inline-block;position: relative;")
+						img(src="http://weui.io/images/icon_tabbar.png" alt="" class="weui-tabbar__icon")
+					p(class="weui-tabbar__label") 分享
+				a(href="javascript:;" class="weui-tabbar__item weui-bar__item_on")
+					span(style="display: inline-block;position: relative;")
+						img(src="http://weui.io/images/icon_tabbar.png" alt="" class="weui-tabbar__icon")
+					p(class="weui-tabbar__label") 删除
+			div(class="js_dialog" id="mark_edit_dialog" style="opacity: 1;display:none")
+				div(class="weui-mask")
+				div(class="weui-dialog weui-skin_android")
+					div(class="weui-dialog__hd")
+						strong(class="weui-dialog__title") 请选择标签
+					div(class="weui-dialog__bd")
+						div(class="weui-cells")
+							div(class="weui-cell")
+								div(id="marks_container" style="align:center")
+									//div(class="mark mark_use") 方糖艺术中心
+									//div(class="mark mark_unuse") 美术玩家				
+									input(id="input_mark_new" class="mark mark_new" value='新增标签')
+						div(style="white-space:nowrap;display:none")
+							label(for="weuiAgree" class="weui-agree")
+								input(id="mark_edit_dialog_ispublic" type="checkbox" class="weui-agree__checkbox")
+								span(class="weui-agree__text") 设置为公开
+					div(class="weui-dialog__ft")
+						a(id ='mark_edit_dialog_ok' href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary") 确定
+						a(id ='mark_edit_dialog_cancel' href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default") 取消						
+			div(id="toast" style="opacity: 0; display:none;z-index:999")
+				div(class="weui-mask_transparent")
+				div(class="weui-toast")
+					i(class="weui-icon-success-no-circle weui-icon_toast")
+					p(id ="toast_text" class="weui-toast__content")已完成

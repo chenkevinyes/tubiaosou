@@ -1,0 +1,170 @@
+html(lang="zh-cmn-Hans")
+	head
+		title title
+		meta(charset="UTF-8")
+		meta(name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,viewport-fit=cover")    
+		link(rel="stylesheet" href="/css/weui.css")
+		script(type="text/javascript" src="http://code.jquery.com/jquery-2.0.0.min.js")
+		script(src='http://res.wx.qq.com/open/js/jweixin-1.2.0.js')
+		script(src="https://res.wx.qq.com/open/libs/weuijs/1.0.0/weui.min.js")		
+		style(type="text/css").
+			.mark{
+				border-radius:10px;margin:3px 3px 3px 3px;padding:1px 5px 1px 5px;white-space:nowrap;float:right;font-size:14px
+				}
+			.mark.mark_use{
+				border:thin solid #00ff00;color:#00ff00
+				}				
+			.mark.mark_unuse{
+				border:thin dashed #aaaaaa;color:#aaaaaa
+				}								
+			.mark.mark_selected{
+				border:thin solid #00ff00;color:#ffffff;background-color:#00ff00
+				}												
+		script.
+			function imagepreview(url){
+				var urls = "#{urls}"
+				urls = urls.split(',')				
+			  console.log('url:'+url)
+			  console.log('urls'+urls)				
+				wx.previewImage({current:url,urls:urls})			
+			}			
+			function imagepreview_qr(){
+				url = 'http://www.webtest365.com/tubiaosou_qr.jpg'
+				urls=[]				
+				urls.push(url)
+				wx.previewImage({current:url,urls:urls})			
+			}			
+			$(document).ready(function(){
+				$('.mark').on('click',function(){
+					var cssname = $(this).attr('class');
+					if (cssname=="mark mark_unuse"){
+						$(this).attr('class','mark mark_use');
+					}else if (cssname=="mark mark_use"){
+						$(this).attr('class','mark mark_unuse');
+					}
+				});
+			})
+		//-			
+			script(type="text/javascript" class="home js_show").
+				$(function(){
+				    var winH = $(window).height();
+				    var categorySpace = 10;
+						console.log(winH);
+				    $('.js_item').on('click', function(){
+				        var id = $(this).data('id');
+				        console.log('js_item'+id);			        
+				        window.pageManager.go(id);
+				    });
+				    $('.js_category').on('click', function(){
+				        var $this = $(this),
+				            $inner = $this.next('.js_categoryInner'),
+				            $page = $this.parents('.page'),
+				            $parent = $(this).parent('li');
+				        var innerH = $inner.data('height');
+				        bear = $page;
+								console.log('js_CATEGORY');			        
+				        if(!innerH){
+				            $inner.css('height', 'auto');
+				            innerH = $inner.height();
+				            $inner.removeAttr('style');
+				            $inner.data('height', innerH);
+				        }
+
+				        if($parent.hasClass('js_show')){
+				            $parent.removeClass('js_show');
+				        }else{
+				            $parent.siblings().removeClass('js_show');
+
+				            $parent.addClass('js_show');
+				            if(this.offsetTop + this.offsetHeight + innerH > $page.scrollTop() + winH){
+				                var scrollTop = this.offsetTop + this.offsetHeight + innerH - winH + categorySpace;
+
+				                if(scrollTop > this.offsetTop){
+				                    scrollTop = this.offsetTop - categorySpace;
+				                }
+
+				                $page.scrollTop(scrollTop);
+				            }
+				        }
+				    });
+				});		
+	body        		
+		div(class="container")		
+			div(class="page list")
+				div(class="page_bd")
+					div(class="weui-cells")
+						-for (var i=0;i<3;i++)																
+							div(class="weui-cell")
+								div(class="weui-cell__hd")
+									img(src="http://webtest365.com/tubiaosou_qr.jpg" alt="" style="width:64px;margin-right:5px;display:block")																					
+								div(class="weui-cell__bd" style="width:50px")
+									//-
+										label(for="switchCP" class="weui-switch-cp" style="border:1px dashed #00ff00;text-align:center;font-size:16px"  )   公开
+										input(class="weui-switch-cp__input" type="checkbox" checked="checked")
+									//-
+										div(class="weui-switch-cp__box")
+										i(class="weui-icon-success")
+									div(style="white-space:nowrap")
+										label(for="weuiAgree" class="weui-agree")
+											input(id="" type="checkbox" class="weui-agree__checkbox")
+											span(class="weui-agree__text") 公开
+								//-			
+									div(class="page picker js_show")
+										div(class="page__bd page__bd_spacing")
+											a(href="javascript:;" class="weui-btn weui-btn_default" style="border-radius:10px;border:1px solid #000;"  id="showPicker").
+												分类															
+								div(class="" style="border-radius:10px;width:60%;height:64px; border:1px;dashed #000;")
+									div(style="align:center")
+										div(class="mark") 美术玩家
+										div(class="mark mark_use") 方糖艺术中心
+										div(class="mark mark_unuse") 美术玩家										
+										div(class="mark mark_selected") 											
+											div(style="display:inline") 五矿广场												
+											div(style="display:inline;text-align:center") x												
+								div(class="weui-cell__ft" style="font-size:20px")									
+									p +
+									p -
+		//-	
+			div(class="")
+				div(class="weui-mask weui-animate-fade-in")
+				div(class="weui-picker weui-animate-slide-up") 
+					div(class="weui-picker__hd")
+						a(href="javascript:;" data-action="cancel" class="weui-picker__action")XX
+						a(href="javascript:;" data-action="select" class="weui-picker__action" id="weui-picker-confirm")XX
+					div(class="weui-picker__bd")
+						div(class="weui-picker__group") 						
+							div(class="weui-picker__mask")
+							div(class="weui-picker__indicator")
+							div(class="weui-picker__content" style="transform: translate3d(0px, 34px, 0px);")
+								div(class="weui-picker__item") XX
+								div(class="weui-picker__item") XX
+								div(class="weui-picker__item") XX
+								div(class="weui-picker__item weui-picker__item_disabled") XX (disabled)
+								div(class="weui-picker__item")XX
+	//-
+		script(type="text/javascript").
+			$('#showPicker').on('click', function () {
+				console.log('picker')
+				weui.picker([{
+					label: '火车',
+					value: 0
+				}, {
+					label: '汽车',
+					value: 1
+				}, {
+					label: '飞机',
+					value: 2
+				},{
+					label: '火箭 (disabled)',
+					disabled: true,
+					value: 3
+				}, {
+					label: '轮船',
+					value: 4
+				}], {
+					onChange: function (result) {
+					    console.log(result);
+					},
+					onConfirm: function (result) {
+					    console.log(result[0]);
+					}
